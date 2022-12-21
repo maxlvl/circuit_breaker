@@ -1,4 +1,4 @@
-class CircuitBreakerTrippedError(Exception):
+class CircuitBreakerError(Exception):
     def __init__(self, message) -> None:
         self.message = message
         # TODO: figure out better error code

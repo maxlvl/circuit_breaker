@@ -1,5 +1,6 @@
 from time import time
-from .error import CircuitBreakerTrippedError
+from .error import CircuitBreakerError
+import threading
 
 # TODO: Implement half-open state
 # TODO: implement register method to register a circuit breaker
@@ -16,30 +17,45 @@ class CircuitBreaker:
         self.reset_timeout: time = reset_timeout
         self.current_failures: int = 0
         self.tripped: bool = False
-        self.last_failure_time: time = None
+        self.timer: threading.Timer = None
 
     def _trip_breaker(self) -> None:
+        print("TRIPPING BREAKER")
         self.tripped = True
 
     def _reset_breaker(self) -> None:
+        print("RESETTING BREAKER")
         self.current_failures = 0
+        self.tripped = False
+
+    def _half_open_breaker(self) -> None:
+        print("SETTING TO HALF OPEN STATE")
         self.tripped = False
 
     def __call__(self, func):
         def wrapper(*args, **kwargs):
-            if self.tripped:
-                if time() - self.last_failure_time > self.reset_timeout:
-                    self._reset_breaker()
+            if not self.tripped:
+                try:
+                    result = func(*args, **kwargs)
+                except Exception:
+                    self.current_failures += 1
+                    if self.current_failures >= self.max_failures:
+                        # set state to 'open'
+                        self._trip_breaker()
+                        # this will take care of setting it to a half_open state
+                        # if we're still getting an error, it'll get incrememented and trip immediately
+                        # this avoids cascading failures by limiting the number of requests that can
+                        # pass through the circuit breaker while the underlying system is in a vulnerable state
+                        self.timer = threading.Timer(
+                            self.reset_timeout, self._half_open_breaker
+                        ).start()
+                        raise
                 else:
-                    raise CircuitBreakerTrippedError(
-                        message="Circuit breaker is tripped"
-                    )
-            try:
-                return func(*args, **kwargs)
-            except Exception:
-                self.current_failures += 1
-                if self.current_failures >= self.max_failures:
-                    self._trip_breaker()
-                    self.last_failure_time = time()
+                    # set the state to closed
+                    self._reset_breaker()
+                    self.timer.cancel()
+                    return result
+            else:
+                raise CircuitBreakerError("CircuitBreaker was tripped")
 
         return wrapper

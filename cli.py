@@ -1,5 +1,5 @@
 from time import sleep
-from circuit_breaker.breaker import CircuitBreaker
+from short_circuit.breaker import CircuitBreaker
 import requests
 
 cb = CircuitBreaker(max_failures=3, reset_timeout=3)

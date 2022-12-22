@@ -1,8 +1,8 @@
-from circuit_breaker.breaker import CircuitBreaker
+from short_circuit.breaker import CircuitBreaker
 import pytest
 from time import sleep
 
-from circuit_breaker.error import CircuitBreakerError
+from short_circuit.error import CircuitBreakerError
 
 
 class TestBreaker:

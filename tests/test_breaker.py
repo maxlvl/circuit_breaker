@@ -61,3 +61,48 @@ class TestBreaker:
         assert cb.current_failures == 0
         assert result == "Successful call to underlying service made"
 
+    def test_circuit_breaker_switches_to_half_open_state_after_timeout_expires(self):
+        cb = CircuitBreaker(max_failures=1, reset_timeout=0.01)
+
+        @cb
+        def foo():
+            raise Exception
+
+        with pytest.raises(Exception):
+            foo()
+
+        assert cb.tripped == True
+        assert cb.current_failures == 1
+        # sleep for longer than the reset_timeout to force half-open state
+        sleep(0.02)
+        assert cb.tripped == False
+        # assert current_failures hasn't been reset in the half-open state
+        assert cb.current_failures == 1
+
+    def test_circuit_breaker_closes_after_successful_call_and_timeout_expiry(self):
+        cb = CircuitBreaker(max_failures=1, reset_timeout=0.1)
+
+        @cb
+        def foo():
+            raise Exception
+
+        with pytest.raises(Exception):
+            foo()
+
+        assert cb.tripped == True
+
+        @cb
+        def bar():
+            return True
+
+        with pytest.raises(CircuitBreakerError):
+            bar()
+
+        assert cb.current_failures > 0
+
+        sleep(0.2)
+
+        bar()
+        # assert breaker is closed and has been reset
+        assert cb.tripped == False
+        assert cb.current_failures == 0

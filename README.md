@@ -1,4 +1,4 @@
-# PyCircuitBreaker
+# ShortCircuit
 
 A simple Python library that provides the CircuitBreaker pattern as a function decorator.
 

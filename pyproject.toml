@@ -1,6 +1,6 @@
 
 [tool.poetry]
-name = "circuit_breaker"
+name = "short_circuit"
 version = "0.1.0"
 description = "A small lib that implements the CircuitBreaker pattern"
 authors = ["Maxim Van Lyl"]

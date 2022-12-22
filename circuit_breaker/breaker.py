@@ -2,7 +2,6 @@ from time import time
 from .error import CircuitBreakerError
 import threading
 
-# TODO: Implement half-open state
 # TODO: implement register method to register a circuit breaker
 # TODO: implement get_circuits method to get a list of multiple circuit breakers
 # TODO: Figure out what other interface is required to work with circuitbreakers (what are the use cases?)

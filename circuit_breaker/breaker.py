@@ -20,16 +20,13 @@ class CircuitBreaker:
         self.timer: threading.Timer = None
 
     def _trip_breaker(self) -> None:
-        print("TRIPPING BREAKER")
         self.tripped = True
 
     def _reset_breaker(self) -> None:
-        print("RESETTING BREAKER")
         self.current_failures = 0
         self.tripped = False
 
     def _half_open_breaker(self) -> None:
-        print("SETTING TO HALF OPEN STATE")
         self.tripped = False
 
     def __call__(self, func):
@@ -53,7 +50,8 @@ class CircuitBreaker:
                 else:
                     # set the state to closed
                     self._reset_breaker()
-                    self.timer.cancel()
+                    if self.timer:
+                        self.timer.cancel()
                     return result
             else:
                 raise CircuitBreakerError("CircuitBreaker was tripped")

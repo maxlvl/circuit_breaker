@@ -56,3 +56,7 @@ class CircuitBreaker:
                 raise CircuitBreakerError("CircuitBreaker was tripped")
 
         return wrapper
+
+    def register_breaker(self):
+        # this will register a circuit breaker with the circuit breaker manager
+        pass
